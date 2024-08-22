@@ -1,18 +1,24 @@
 package pom;
 
-	import java.util.List;
+	import java.time.Duration;
+import java.util.List;
 
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindAll;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.How;
 import org.openqa.selenium.support.PageFactory;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 	public class CheckoutPages 
 	{
-		public WebDriver driver;
+		private WebDriver driver;
 		
 	
 		@FindBy(xpath=("//div[@role='dialog']//div[1]/div[1]/div[1]/div[1]/div[1]/button"))
@@ -21,7 +27,7 @@ import org.openqa.selenium.support.ui.Select;
 		@FindBy(xpath=("//a[@aria-label='Select options for “Full Fit Propolis Light Ampoule”']//img[@alt='Add to cart']"))
 		private WebElement AddToCart;
 		
-		@FindBy(xpath=("//*[@id=\\\"header\\\"]/div/div[2]/div[3]/div/div/div/div/div[1]/div/div[2]/div[3]/a[2]"))
+		@FindBy(xpath=("//*[@id=\"header\"]/div/div[2]/div[3]/div/div/div/div/div[1]/div/div[2]/div[3]/a[2]"))
 		private WebElement CheckoutBtn;
 		
 		@FindBy(id=("bftCountryCurrencySelectorLink"))
@@ -45,7 +51,7 @@ import org.openqa.selenium.support.ui.Select;
 		@FindBy(name=("billing_address_1"))
 		private WebElement InputAddress;
 		
-		@FindBy(id=("billing_city"))
+		@FindBy(xpath=("//input[@id='billing_city']"))
 		private WebElement InputAddressCity;
 		
 		
@@ -75,17 +81,17 @@ import org.openqa.selenium.support.ui.Select;
 		private WebElement PaymentBtn;
 		
 		
-		@FindBy(xpath=("//*[@id=\\\"wc-stripe-card-element\\\"]/div/iframe"))
+		@FindBy(xpath=("//*[@id=\"payment\"]/div[1]/ul"))
 		private WebElement SwitchToFrame;
 		
 		
-		@FindBy(xpath=("//*[@id=\\\"Field-numberInput\\\"]"))
+		@FindBy(xpath=("//input[@id='Field-numberInput']"))
 		private WebElement InputStripe;
 
-		@FindBy(xpath=("//*[@id=\\\"Field-expiryInput\\\"]"))
+		@FindBy(xpath=("//input[@id='Field-expiryInput']"))
 		private WebElement SendExpired;
 		
-		@FindBy(xpath=("//*[@id=\\\"Field-cvcInput\\\"]"))
+		@FindBy(xpath=("//input[@id='Field-cvcInput']"))
 		private WebElement SendCvv;
 		
 		
@@ -187,20 +193,61 @@ import org.openqa.selenium.support.ui.Select;
 		InputAddress.sendKeys(BillingAddress);
 	}
 	
+
+	
 	public void SendCityName(String CityName)
 	
 	{
-		InputAddress.sendKeys(CityName);
+		WebDriverWait wait = new WebDriverWait(driver,Duration.ofMillis(7000));
+		
+		wait.until(ExpectedConditions.visibilityOf(InputAddressCity));
+		
+		InputAddressCity.sendKeys(CityName);
 	}
 	
 	
 	public void SelectState(String StateName)
 	{
-		InputAddress.click();
+	//	InputAddress.click();
+		
+	
 		
 		}
-	public void select_State(String StateName) 
-	{
+	public void select_State() 
+	
+	{WebDriverWait wait = new WebDriverWait(driver,Duration.ofMillis(5000));
+	
+	wait.until(ExpectedConditions.visibilityOf(StateDropDown));
+	StateDropDown.click();
+	JavascriptExecutor js = (JavascriptExecutor) driver;
+	
+	List<WebElement> allOptions = driver.findElements(By.cssSelector(".select2-results__options>li"));
+	 
+	 for(WebElement option:allOptions) {
+		 try {
+		        // Wait for the element to be stable (visible and not moving)
+			 
+		        new WebDriverWait(driver, Duration.ofSeconds(5))
+		            .until(ExpectedConditions.visibilityOf(option));
+
+		        // Now, attempt to get the text
+		        
+		        String text = option.getText();
+		        System.out.println(text);
+		        
+		        if (text.equals("California")) {
+		            new WebDriverWait(driver, Duration.ofSeconds(5))
+		                .until(ExpectedConditions.elementToBeClickable(option)).click();
+		            break;
+		        }
+		    } catch (StaleElementReferenceException e) {
+		        System.out.println("Stale Element Exception caught. Refetching elements...");
+		        allOptions = driver.findElements(By.cssSelector(".select2-results__options>li"));
+		    }
+	}  
+		
+		
+		/*
 		StateDropDown.click();
 		try { Thread.sleep(2000);}
 		catch (InterruptedException e) {}
@@ -213,7 +260,8 @@ import org.openqa.selenium.support.ui.Select;
 				catch (InterruptedException e) {}
 				break;
 			}
-		}
+		} 
+		*/
 	}
 	
 	public void SendZipCode(String ZipCode)
@@ -269,6 +317,5 @@ import org.openqa.selenium.support.ui.Select;
 	{
 		PayPalBtn.click();
 	}
-	
 	
 	}
